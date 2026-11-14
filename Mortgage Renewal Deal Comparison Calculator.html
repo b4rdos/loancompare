@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mortgage Renewal Deal Comparison Calculator</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for clean, responsive financial charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom range slider styling for crisp fintech feel */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            height: 6px;
+            border-radius: 9999px;
+            background: #e2e8f0;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: transform 0.1s ease, background-color 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.12);
+            background: #4338ca;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+            transition: transform 0.1s ease, background-color 0.15s ease;
+        }
+        /* Hide number input spin buttons for cleaner UI */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-800">
+
+    <!-- Top Navigation / Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-900 tracking-tight">Mortgage Renewal Deal Comparator</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Compare rates, product fees, and overpayments side-by-side</p>
+                </div>
+            </div>
+
+            <!-- Global Toolbar Controls -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                <!-- Currency Selector -->
+                <div class="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200" role="group" aria-label="Currency selector">
+                    <button type="button" data-currency="£" class="currency-btn px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-indigo-600 shadow-xs transition">£ GBP</button>
+                    <button type="button" data-currency="€" class="currency-btn px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition">€ EUR</button>
+                    <button type="button" data-currency="$" class="currency-btn px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition">$ USD</button>
+                </div>
+
+                <!-- Sync Loan Amount Button -->
+                <button id="syncLoanBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs" title="Copy Deal A's Loan Amount to all deals">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    Sync Loan
+                </button>
+
+                <!-- Reset Defaults Button -->
+                <button id="resetBtn" type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 active:bg-slate-100 transition shadow-2xs">
+                    <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Reset
+                </button>
+
+                <!-- Add Deal Button -->
+                <button id="addDealBtn" type="button" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition shadow-xs disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Deal
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+
+        <!-- Toast / Notification Banner (Non-intrusive feedback) -->
+        <div id="toastBanner" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 transition-opacity duration-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span id="toastMessage">Updated</span>
+        </div>
+
+        <!-- Executive Comparison Summary Banner -->
+        <section id="summaryBanner" class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start sm:items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">Lowest Total Cost</span>
+                        <h2 id="winnerHeadline" class="text-sm sm:text-base font-bold text-slate-900">Calculating best deal...</h2>
+                    </div>
+                    <p id="winnerSubtext" class="text-xs sm:text-sm text-slate-600 mt-1">Adjust rates, fees, or overpayments below to see live savings.</p>
+                </div>
+            </div>
+            <div id="periodWarning" class="hidden text-xs font-medium text-amber-800 bg-amber-50 border border-amber-200 px-3 py-2 rounded-xl flex items-center gap-2 shrink-0">
+                <svg class="w-4 h-4 text-amber-500 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>Deals have different periods; compare annualized cost carefully.</span>
+            </div>
+        </section>
+
+        <!-- Side-by-Side Deal Cards Grid -->
+        <section aria-label="Mortgage Deals Comparison">
+            <div id="dealsGrid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Deal Cards are dynamically rendered here by JS -->
+            </div>
+        </section>
+
+        <!-- Visual Analytics & Trajectory Section -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-2xs space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-4">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900">Visual Deal Breakdown</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Compare remaining balance trajectories and total cost components across your deals</p>
+                </div>
+                <!-- Chart View Toggle -->
+                <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 self-start sm:self-auto">
+                    <button type="button" data-chart="balance" class="chart-tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-indigo-600 shadow-2xs transition">Loan Balance Over Time</button>
+                    <button type="button" data-chart="cost" class="chart-tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition">Cost Breakdown</button>
+                </div>
+            </div>
+
+            <div class="relative w-full h-72 sm:h-80">
+                <canvas id="comparisonChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Month-by-Month Amortization Schedule Section -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+            <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base sm:text-lg font-bold text-slate-900">Month-by-Month Amortization Schedule</h2>
+                    <p class="text-xs sm:text-sm text-slate-500">Inspect monthly interest charges, principal reduction, and balance at the end of each month</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label for="scheduleDealSelect" class="text-xs font-semibold text-slate-600">Inspect Deal:</label>
+                    <select id="scheduleDealSelect" class="text-xs sm:text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- Options populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto max-h-96">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 sticky top-0 z-10 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                        <tr>
+                            <th class="py-3 px-4 sm:px-6">Month</th>
+                            <th class="py-3 px-4">Starting Loan</th>
+                            <th class="py-3 px-4">Payment + Overpay</th>
+                            <th class="py-3 px-4 text-rose-600">Interest</th>
+                            <th class="py-3 px-4 text-emerald-600">Principal Paid</th>
+                            <th class="py-3 px-4 sm:px-6 text-right">Ending Loan</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody" class="divide-y divide-slate-100 text-xs sm:text-sm text-slate-700">
+                        <!-- Rows populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Note -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-slate-400">
+        Calculations use standard monthly interest compounding: Monthly Interest = Balance × (Annual Rate ÷ 12). Verify exact figures with your lender's Key Facts Illustration (KFI).
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        /**
+         * Mortgage Renewal Deal Comparison Calculator
+         * Handles state management, monthly compounding amortization math,
+         * responsive DOM updates, and Chart.js visualizations.
+         */
+
+        // Palette colors for up to 4 deals
+        const DEAL_COLORS = [
+            { border: '#4f46e5', bg: 'rgba(79, 70, 229, 0.12)', badge: 'bg-indigo-50 text-indigo-700 border-indigo-200', dot: 'bg-indigo-600' },
+            { border: '#0d9488', bg: 'rgba(13, 148, 136, 0.12)', badge: 'bg-teal-50 text-teal-700 border-teal-200', dot: 'bg-teal-600' },
+            { border: '#d97706', bg: 'rgba(217, 119, 6, 0.12)', badge: 'bg-amber-50 text-amber-700 border-amber-200', dot: 'bg-amber-600' },
+            { border: '#e11d48', bg: 'rgba(225, 29, 72, 0.12)', badge: 'bg-rose-50 text-rose-700 border-rose-200', dot: 'bg-rose-600' }
+        ];
+
+        // Default initial deals tailored for a £70,000 mortgage renewal
+        const getDefaultDeals = () => [
+            {
+                id: 'deal-1',
+                name: 'Deal A (2-Yr Fix + Fee)',
+                loan: 70000,
+                rate: 4.19,
+                repayment: 525,
+                overpayment: 0,
+                periodYears: 2,
+                dealCost: 999,
+                addFeeToLoan: false
+            },
+            {
+                id: 'deal-2',
+                name: 'Deal B (2-Yr Fee-Free)',
+                loan: 70000,
+                rate: 4.59,
+                repayment: 540,
+                overpayment: 0,
+                periodYears: 2,
+                dealCost: 0,
+                addFeeToLoan: false
+            }
+        ];
+
+        // Application State
+        let state = {
+            currency: '£',
+            deals: getDefaultDeals(),
+            activeChartTab: 'balance', // 'balance' or 'cost'
+            selectedScheduleDealId: 'deal-1'
+        };
+
+        let chartInstance = null;
+        let toastTimeout = null;
+
+        /**
+         * Formats a numeric value into localized currency string
+         */
+        function formatCurrency(amount, decimals = 0) {
+            const isNegative = amount < 0;
+            const absVal = Math.abs(amount);
+            const formatted = absVal.toLocaleString('en-GB', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            });
+            return `${isNegative ? '-' : ''}${state.currency}${formatted}`;
+        }
+
+        /**
+         * Displays a brief non-intrusive toast message
+         */
+        function showToast(message) {
+            const banner = document.getElementById('toastBanner');
+            const msgEl = document.getElementById('toastMessage');
+            msgEl.textContent = message;
+            banner.classList.remove('hidden');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                banner.classList.add('hidden');
+            }, 2200);
+        }
+
+        /**
+         * Core Mortgage Amortization Engine
+         * Computes month-by-month interest, principal reduction, ending balance, and total cost.
+         */
+        function calculateDealMetrics(deal) {
+            const months = Math.max(1, Math.round(deal.periodYears * 12));
+            const monthlyRate = (Math.max(0, deal.rate) / 100) / 12;
+            const initialFee = Math.max(0, deal.dealCost);
+
+            // If user opts to add the product fee to the loan balance, interest accrues on it
+            let currentBalance = Math.max(0, deal.loan) + (deal.addFeeToLoan ? initialFee : 0);
+            const startingEffectiveBalance = currentBalance;
+
+            let totalInterest = 0;
+            let totalOutOfPocketPayments = 0;
+            let totalPrincipalPaid = 0;
+            const schedule = [];
+            const balanceHistory = [currentBalance]; // Month 0 to Month N
+
+            for (let m = 1; m <= months; m++) {
+                if (currentBalance <= 0.005) {
+                    schedule.push({
+                        month: m,
+                        startBalance: 0,
+                        payment: 0,
+                        interest: 0,
+                        principal: 0,
+                        endBalance: 0
+                    });
+                    balanceHistory.push(0);
+                    continue;
+                }
+
+                const startBalance = currentBalance;
+                const interestForMonth = startBalance * monthlyRate;
+                const plannedPayment = Math.max(0, deal.repayment) + Math.max(0, deal.overpayment);
+
+                // Cap final payment if loan is paid off within the deal period
+                const maxNeededToClear = startBalance + interestForMonth;
+                const actualPayment = Math.min(plannedPayment, maxNeededToClear);
+
+                const principalForMonth = actualPayment - interestForMonth;
+                const endBalance = Math.max(0, startBalance - principalForMonth);
+
+                totalInterest += interestForMonth;
+                totalOutOfPocketPayments += actualPayment;
+                totalPrincipalPaid += principalForMonth;
+                currentBalance = endBalance;
+
+                schedule.push({
+                    month: m,
+                    startBalance,
+                    payment: actualPayment,
+                    interest: interestForMonth,
+                    principal: principalForMonth,
+                    endBalance
+                });
+                balanceHistory.push(endBalance);
+            }
+
+            // Total Cost = Interest Paid + Deal Cost (product fee)
+            const totalCost = totalInterest + initialFee;
+
+            // Net Equity Gained = Original Loan (before fee) minus Ending Loan
+            const netLoanReduction = deal.loan - currentBalance;
+
+            // Check if monthly payment is less than first month's interest (negative amortization warning)
+            const firstMonthInterest = startingEffectiveBalance * monthlyRate;
+            const totalMonthlyOutflow = deal.repayment + deal.overpayment;
+            const isUnderpayingInterest = totalMonthlyOutflow < firstMonthInterest && startingEffectiveBalance > 0;
+
+            return {
+                months,
+                endingLoan: currentBalance,
+                totalInterest,
+                dealCost: initialFee,
+                totalCost,
+                totalOutOfPocketPayments: totalOutOfPocketPayments + (deal.addFeeToLoan ? 0 : initialFee),
+                netLoanReduction,
+                schedule,
+                balanceHistory,
+                isUnderpayingInterest
+            };
+        }
+
+        /**
+         * Helper to calculate standard capital & interest monthly repayment for a given term (e.g., 15 yrs)
+         */
+        function computeStandardRepayment(principal, annualRate, termYears) {
+            const n = termYears * 12;
+            const r = (annualRate / 100) / 12;
+            if (r === 0) return Math.round(principal / n);
+            const payment = (principal * r) / (1 - Math.pow(1 + r, -n));
+            return Math.round(payment);
+        }
+
+        /**
+         * Renders all deal input & output cards into #dealsGrid
+         */
+        function renderDeals() {
+            const grid = document.getElementById('dealsGrid');
+            const count = state.deals.length;
+
+            // Adjust responsive grid columns based on number of deals
+            if (count === 1) {
+                grid.className = 'grid grid-cols-1 max-w-2xl mx-auto gap-6';
+            } else if (count === 2) {
+                grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-6';
+            } else {
+                grid.className = 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6';
+            }
+
+            // Calculate metrics for all deals first so we can identify the winner
+            const results = state.deals.map(deal => ({
+                deal,
+                metrics: calculateDealMetrics(deal)
+            }));
+
+            // Find lowest Total Cost deal
+            let minCost = Infinity;
+            let winnerId = null;
+            results.forEach(({ deal, metrics }) => {
+                if (metrics.totalCost < minCost) {
+                    minCost = metrics.totalCost;
+                    winnerId = deal.id;
+                }
+            });
+
+            // Update Add Deal button state
+            const addBtn = document.getElementById('addDealBtn');
+            addBtn.disabled = state.deals.length >= 4;
+
+            // Build HTML for each deal card
+            grid.innerHTML = results.map(({ deal, metrics }, index) => {
+                const color = DEAL_COLORS[index % DEAL_COLORS.length];
+                const isWinner = deal.id === winnerId && results.length > 1;
+                const monthsCount = Math.round(deal.periodYears * 12);
+
+                return `
+                <article class="bg-white rounded-2xl border ${isWinner ? 'border-emerald-400 ring-2 ring-emerald-500/20' : 'border-slate-200'} shadow-2xs flex flex-col justify-between transition-all duration-200 overflow-hidden" data-deal-id="${deal.id}">
+                    <div>
+                        <!-- Card Header -->
+                        <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-2 bg-slate-50/60">
+                            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                                <span class="w-3 h-3 rounded-full ${color.dot} shrink-0"></span>
+                                <input
+                                    type="text"
+                                    value="${escapeHtml(deal.name)}"
+                                    aria-label="Deal Name"
+                                    data-field="name"
+                                    class="deal-input font-bold text-slate-900 text-sm sm:text-base bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none truncate w-full px-1 py-0.5 rounded-xs"
+                                />
+                            </div>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                ${isWinner ? `
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <svg class="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                                        Best Value
+                                    </span>
+                                ` : ''}
+                                <button type="button" data-action="duplicate" title="Duplicate this deal" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                                ${state.deals.length > 1 ? `
+                                <button type="button" data-action="remove" title="Remove this deal" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <!-- Primary Key Outputs Highlight Box -->
+                        <div class="p-5 bg-gradient-to-br from-slate-900 to-slate-800 text-white grid grid-cols-2 gap-4">
+                            <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+                                <div class="text-xs font-medium text-slate-300 flex items-center justify-between">
+                                    <span>Loan at the End</span>
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400">${monthsCount} mo</span>
+                                </div>
+                                <div class="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 text-white" data-output="endingLoan">
+                                    ${formatCurrency(metrics.endingLoan, 0)}
+                                </div>
+                                <div class="text-[11px] text-emerald-400 mt-1 font-medium" data-output="netReduction">
+                                    ${metrics.netLoanReduction >= 0 ? `-${formatCurrency(metrics.netLoanReduction, 0)} paid off` : `+${formatCurrency(Math.abs(metrics.netLoanReduction), 0)} balance grew`}
+                                </div>
+                            </div>
+
+                            <div class="bg-white/5 rounded-xl p-3.5 border border-white/10">
+                                <div class="text-xs font-medium text-slate-300 flex items-center justify-between">
+                                    <span>Total Cost</span>
+                                    <span class="text-[10px] uppercase tracking-wider text-slate-400">Int + Deal</span>
+                                </div>
+                                <div class="text-xl sm:text-2xl font-extrabold tracking-tight mt-1 ${isWinner ? 'text-emerald-400' : 'text-amber-300'}" data-output="totalCost">
+                                    ${formatCurrency(metrics.totalCost, 0)}
+                                </div>
+                                <div class="text-[11px] text-slate-300 mt-1 truncate" data-output="costBreakdown">
+                                    ${formatCurrency(metrics.totalInterest, 0)} int + ${formatCurrency(metrics.dealCost, 0)} fee
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Underpayment Warning if monthly payment doesn't cover interest -->
+                        <div data-warning="underpay" class="${metrics.isUnderpayingInterest ? '' : 'hidden'} bg-rose-50 border-b border-rose-200 px-5 py-2.5 text-xs text-rose-700 font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4 text-rose-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Monthly payment is less than monthly interest — balance will grow.</span>
+                        </div>
+
+                        <!-- Input Controls Form -->
+                        <div class="p-5 space-y-5">
+
+                            <!-- 1. Loan Amount -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-700">Loan Amount</label>
+                                    <div class="relative w-32">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">${state.currency}</span>
+                                        <input type="number" min="1000" max="2000000" step="500" value="${deal.loan}" data-field="loan" class="deal-input w-full pl-7 pr-2.5 py-1.5 text-right text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                                    </div>
+                                </div>
+                                <input type="range" min="10000" max="500000" step="1000" value="${Math.min(500000, Math.max(10000, deal.loan))}" data-field="loan" class="deal-slider w-full">
+                            </div>
+
+                            <!-- 2. Interest Rate -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-700">Interest Rate (%)</label>
+                                    <div class="relative w-28">
+                                        <input type="number" min="0" max="20" step="0.01" value="${deal.rate}" data-field="rate" class="deal-input w-full pl-2.5 pr-7 py-1.5 text-right text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">%</span>
+                                    </div>
+                                </div>
+                                <input type="range" min="0.5" max="12" step="0.05" value="${Math.min(12, Math.max(0.5, deal.rate))}" data-field="rate" class="deal-slider w-full">
+                            </div>
+
+                            <!-- 3. Monthly Repayment -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <label class="text-xs font-semibold text-slate-700">Repayment / mo</label>
+                                        <button type="button" data-action="auto-repayment" title="Auto-calculate payment for a 15-year remaining term" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600 hover:bg-indigo-100 border border-indigo-200 transition">
+                                            15yr auto
+                                        </button>
+                                    </div>
+                                    <div class="relative w-32">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">${state.currency}</span>
+                                        <input type="number" min="0" max="50000" step="5" value="${deal.repayment}" data-field="repayment" class="deal-input w-full pl-7 pr-2.5 py-1.5 text-right text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                                    </div>
+                                </div>
+                                <input type="range" min="100" max="3000" step="10" value="${Math.min(3000, Math.max(100, deal.repayment))}" data-field="repayment" class="deal-slider w-full">
+                            </div>
+
+                            <!-- 4. Monthly Overpayment -->
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-semibold text-slate-700">Overpayment / mo</label>
+                                    <div class="relative w-32">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">${state.currency}</span>
+                                        <input type="number" min="0" max="20000" step="10" value="${deal.overpayment}" data-field="overpayment" class="deal-input w-full pl-7 pr-2.5 py-1.5 text-right text-sm font-bold text-emerald-700 bg-emerald-50/40 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white">
+                                    </div>
+                                </div>
+                                <input type="range" min="0" max="1500" step="25" value="${Math.min(1500, Math.max(0, deal.overpayment))}" data-field="overpayment" class="deal-slider w-full">
+                            </div>
+
+                            <!-- 5. Deal Period & 6. Deal Cost (2-Column subgrid) -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                                <!-- Deal Period -->
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-xs font-semibold text-slate-700">Period (Years)</label>
+                                        <span class="text-[11px] font-medium text-slate-400">${monthsCount} mos</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <input type="number" min="0.5" max="35" step="0.5" value="${deal.periodYears}" data-field="periodYears" class="deal-input w-full px-3 py-1.5 text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                                        <div class="flex gap-1 shrink-0">
+                                            <button type="button" data-preset-years="2" class="preset-yr-btn px-2 py-1.5 text-xs font-semibold rounded-lg border ${deal.periodYears === 2 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">2y</button>
+                                            <button type="button" data-preset-years="3" class="preset-yr-btn px-2 py-1.5 text-xs font-semibold rounded-lg border ${deal.periodYears === 3 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">3y</button>
+                                            <button type="button" data-preset-years="5" class="preset-yr-btn px-2 py-1.5 text-xs font-semibold rounded-lg border ${deal.periodYears === 5 ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">5y</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Deal Cost (Product / Arrangement Fee) -->
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-xs font-semibold text-slate-700">Deal Cost (Fee)</label>
+                                        <label class="inline-flex items-center gap-1 cursor-pointer text-[11px] text-slate-500 hover:text-slate-800" title="Add deal fee onto the mortgage loan instead of paying upfront">
+                                            <input type="checkbox" data-field="addFeeToLoan" ${deal.addFeeToLoan ? 'checked' : ''} class="deal-checkbox rounded-xs text-indigo-600 focus:ring-indigo-500">
+                                            <span>Add to loan</span>
+                                        </label>
+                                    </div>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">${state.currency}</span>
+                                        <input type="number" min="0" max="20000" step="50" value="${deal.dealCost}" data-field="dealCost" class="deal-input w-full pl-7 pr-2.5 py-1.5 text-right text-sm font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Secondary Summary -->
+                    <div class="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                        <span>Total Out-of-Pocket Paid:</span>
+                        <span class="font-bold text-slate-900" data-output="totalOutOfPocket">${formatCurrency(metrics.totalOutOfPocketPayments, 0)}</span>
+                    </div>
+                </article>
+                `;
+            }).join('');
+
+            updateSummaryBanner(results);
+            updateScheduleSelector();
+            renderScheduleTable();
+            updateChart(results);
+        }
+
+        /**
+         * Updates only the numeric output values on existing cards without rebuilding DOM inputs
+         * (Keeps typing and slider dragging completely smooth with zero focus loss!)
+         */
+        function refreshCalculationsOnly() {
+            const results = state.deals.map(deal => ({
+                deal,
+                metrics: calculateDealMetrics(deal)
+            }));
+
+            let minCost = Infinity;
+            let winnerId = null;
+            results.forEach(({ deal, metrics }) => {
+                if (metrics.totalCost < minCost) {
+                    minCost = metrics.totalCost;
+                    winnerId = deal.id;
+                }
+            });
+
+            results.forEach(({ deal, metrics }) => {
+                const card = document.querySelector(`article[data-deal-id="${deal.id}"]`);
+                if (!card) return;
+
+                const isWinner = deal.id === winnerId && results.length > 1;
+                const endingLoanEl = card.querySelector('[data-output="endingLoan"]');
+                const netRedEl = card.querySelector('[data-output="netReduction"]');
+                const totalCostEl = card.querySelector('[data-output="totalCost"]');
+                const breakdownEl = card.querySelector('[data-output="costBreakdown"]');
+                const outOfPocketEl = card.querySelector('[data-output="totalOutOfPocket"]');
+                const warningEl = card.querySelector('[data-warning="underpay"]');
+
+                if (endingLoanEl) endingLoanEl.textContent = formatCurrency(metrics.endingLoan, 0);
+                if (netRedEl) {
+                    netRedEl.textContent = metrics.netLoanReduction >= 0
+                        ? `-${formatCurrency(metrics.netLoanReduction, 0)} paid off`
+                        : `+${formatCurrency(Math.abs(metrics.netLoanReduction), 0)} balance grew`;
+                }
+                if (totalCostEl) {
+                    totalCostEl.textContent = formatCurrency(metrics.totalCost, 0);
+                    totalCostEl.className = `text-xl sm:text-2xl font-extrabold tracking-tight mt-1 ${isWinner ? 'text-emerald-400' : 'text-amber-300'}`;
+                }
+                if (breakdownEl) {
+                    breakdownEl.textContent = `${formatCurrency(metrics.totalInterest, 0)} int + ${formatCurrency(metrics.dealCost, 0)} fee`;
+                }
+                if (outOfPocketEl) {
+                    outOfPocketEl.textContent = formatCurrency(metrics.totalOutOfPocketPayments, 0);
+                }
+                if (warningEl) {
+                    warningEl.classList.toggle('hidden', !metrics.isUnderpayingInterest);
+                }
+            });
+
+            updateSummaryBanner(results);
+            renderScheduleTable();
+            updateChart(results);
+        }
+
+        /**
+         * Updates the top Executive Summary Banner comparing the deals
+         */
+        function updateSummaryBanner(results) {
+            const headline = document.getElementById('winnerHeadline');
+            const subtext = document.getElementById('winnerSubtext');
+            const periodWarning = document.getElementById('periodWarning');
+
+            if (results.length === 0) return;
+
+            if (results.length === 1) {
+                const { deal, metrics } = results[0];
+                headline.textContent = `${deal.name}: ${formatCurrency(metrics.totalCost, 0)} Total Cost`;
+                subtext.textContent = `Loan at the end of ${deal.periodYears} yrs will be ${formatCurrency(metrics.endingLoan, 0)} (${formatCurrency(metrics.totalInterest, 0)} interest + ${formatCurrency(metrics.dealCost, 0)} deal cost).`;
+                periodWarning.classList.add('hidden');
+                return;
+            }
+
+            // Sort by Total Cost ascending
+            const sorted = [...results].sort((a, b) => a.metrics.totalCost - b.metrics.totalCost);
+            const best = sorted[0];
+            const runnerUp = sorted[1];
+            const savings = runnerUp.metrics.totalCost - best.metrics.totalCost;
+
+            // Check if all deals share the same period
+            const firstPeriod = results[0].deal.periodYears;
+            const hasMixedPeriods = results.some(r => r.deal.periodYears !== firstPeriod);
+            periodWarning.classList.toggle('hidden', !hasMixedPeriods);
+
+            if (Math.abs(savings) < 1) {
+                headline.textContent = `Both deals cost virtually the same (${formatCurrency(best.metrics.totalCost, 0)})`;
+                subtext.textContent = `Ending loan balances are ${formatCurrency(best.metrics.endingLoan, 0)} vs ${formatCurrency(runnerUp.metrics.endingLoan, 0)}.`;
+            } else {
+                headline.textContent = `${best.deal.name} saves you ${formatCurrency(savings, 0)} vs ${runnerUp.deal.name}`;
+                subtext.textContent = `Total Cost of ${formatCurrency(best.metrics.totalCost, 0)} (${formatCurrency(best.metrics.totalInterest, 0)} interest + ${formatCurrency(best.metrics.dealCost, 0)} deal cost) with ${formatCurrency(best.metrics.endingLoan, 0)} loan remaining.`;
+            }
+        }
+
+        /**
+         * Updates the dropdown for selecting which deal's month-by-month table to inspect
+         */
+        function updateScheduleSelector() {
+            const select = document.getElementById('scheduleDealSelect');
+            if (!state.deals.some(d => d.id === state.selectedScheduleDealId)) {
+                state.selectedScheduleDealId = state.deals[0]?.id || '';
+            }
+            select.innerHTML = state.deals.map(d => `
+                <option value="${d.id}" ${d.id === state.selectedScheduleDealId ? 'selected' : ''}>
+                    ${escapeHtml(d.name)} (${d.periodYears} yrs)
+                </option>
+            `).join('');
+        }
+
+        /**
+         * Renders the month-by-month amortization schedule table for the selected deal
+         */
+        function renderScheduleTable() {
+            const tbody = document.getElementById('scheduleTableBody');
+            const selectedDeal = state.deals.find(d => d.id === state.selectedScheduleDealId) || state.deals[0];
+            if (!selectedDeal) {
+                tbody.innerHTML = '';
+                return;
+            }
+
+            const metrics = calculateDealMetrics(selectedDeal);
+            tbody.innerHTML = metrics.schedule.map(row => `
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="py-2.5 px-4 sm:px-6 font-semibold text-slate-900">Month ${row.month}</td>
+                    <td class="py-2.5 px-4 text-slate-600">${formatCurrency(row.startBalance, 2)}</td>
+                    <td class="py-2.5 px-4 font-medium text-slate-800">${formatCurrency(row.payment, 2)}</td>
+                    <td class="py-2.5 px-4 text-rose-600">${formatCurrency(row.interest, 2)}</td>
+                    <td class="py-2.5 px-4 text-emerald-600 font-medium">${formatCurrency(row.principal, 2)}</td>
+                    <td class="py-2.5 px-4 sm:px-6 text-right font-bold text-slate-900">${formatCurrency(row.endBalance, 2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        /**
+         * Renders or updates the Chart.js visualization
+         */
+        function updateChart(results) {
+            const ctx = document.getElementById('comparisonChart').getContext('2d');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            if (state.activeChartTab === 'balance') {
+                // Line chart of Remaining Loan Balance over months
+                const maxMonths = Math.max(...results.map(r => r.metrics.months));
+                const labels = Array.from({ length: maxMonths + 1 }, (_, i) => i === 0 ? 'Start' : `Mo ${i}`);
+
+                const datasets = results.map(({ deal, metrics }, idx) => {
+                    const color = DEAL_COLORS[idx % DEAL_COLORS.length];
+                    return {
+                        label: `${deal.name} (End: ${formatCurrency(metrics.endingLoan, 0)})`,
+                        data: metrics.balanceHistory,
+                        borderColor: color.border,
+                        backgroundColor: color.bg,
+                        borderWidth: 2.5,
+                        pointRadius: maxMonths <= 36 ? 3 : 0,
+                        pointHoverRadius: 5,
+                        tension: 0.25,
+                        fill: false
+                    };
+                });
+
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        interaction: { mode: 'index', intersect: false },
+                        plugins: {
+                            legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Inter', size: 12, weight: '600' } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        if (context.raw === null || context.raw === undefined) return '';
+                                        return `${context.dataset.label.split(' (')[0]}: ${formatCurrency(context.raw, 0)}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { maxTicksLimit: 12, font: { family: 'Inter', size: 11 } } },
+                            y: {
+                                border: { display: false },
+                                grid: { color: '#f1f5f9' },
+                                ticks: {
+                                    font: { family: 'Inter', size: 11 },
+                                    callback: (val) => formatCurrency(val, 0)
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Stacked Bar Chart comparing Total Cost (Interest + Deal Cost) vs Principal Paid Off
+                const labels = results.map(r => r.deal.name);
+                const interestData = results.map(r => Math.round(r.metrics.totalInterest));
+                const feeData = results.map(r => Math.round(r.metrics.dealCost));
+                const principalPaidData = results.map(r => Math.max(0, Math.round(r.metrics.netLoanReduction)));
+
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [
+                            {
+                                label: 'Interest Paid (Cost)',
+                                data: interestData,
+                                backgroundColor: '#f43f5e',
+                                borderRadius: 6,
+                                stack: 'cost'
+                            },
+                            {
+                                label: 'Deal Cost / Fee (Cost)',
+                                data: feeData,
+                                backgroundColor: '#f59e0b',
+                                borderRadius: 6,
+                                stack: 'cost'
+                            },
+                            {
+                                label: 'Principal Paid Off (Equity)',
+                                data: principalPaidData,
+                                backgroundColor: '#10b981',
+                                borderRadius: 6,
+                                stack: 'equity'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'top', labels: { usePointStyle: true, font: { family: 'Inter', size: 12, weight: '600' } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => `${context.dataset.label}: ${formatCurrency(context.raw, 0)}`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 12, weight: '600' } } },
+                            y: {
+                                border: { display: false },
+                                grid: { color: '#f1f5f9' },
+                                ticks: {
+                                    font: { family: 'Inter', size: 11 },
+                                    callback: (val) => formatCurrency(val, 0)
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        /**
+         * Escapes HTML special characters for safe string interpolation
+         */
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        /**
+         * Event Delegation for Deal Card Inputs, Sliders, and Action Buttons
+         */
+        function setupEventListeners() {
+            const dealsGrid = document.getElementById('dealsGrid');
+
+            // Handle text/number inputs and sliders inside deal cards
+            dealsGrid.addEventListener('input', (e) => {
+                const target = e.target;
+                const card = target.closest('article[data-deal-id]');
+                if (!card) return;
+
+                const dealId = card.dataset.dealId;
+                const deal = state.deals.find(d => d.id === dealId);
+                if (!deal) return;
+
+                const field = target.dataset.field;
+                if (!field) return;
+
+                if (field === 'name') {
+                    deal.name = target.value;
+                    updateScheduleSelector();
+                    const results = state.deals.map(d => ({ deal: d, metrics: calculateDealMetrics(d) }));
+                    updateSummaryBanner(results);
+                    updateChart(results);
+                    return;
+                }
+
+                const numVal = parseFloat(target.value);
+                if (!isNaN(numVal)) {
+                    deal[field] = Math.max(0, numVal);
+
+                    // Synchronize paired slider or number input on the same card
+                    if (target.classList.contains('deal-input')) {
+                        const slider = card.querySelector(`.deal-slider[data-field="${field}"]`);
+                        if (slider) slider.value = numVal;
+                    } else if (target.classList.contains('deal-slider')) {
+                        const numInput = card.querySelector(`.deal-input[data-field="${field}"]`);
+                        if (numInput) numInput.value = numVal;
+                    }
+
+                    // If periodYears changed, re-render card badges/month count cleanly or refresh
+                    if (field === 'periodYears') {
+                        renderDeals();
+                    } else {
+                        refreshCalculationsOnly();
+                    }
+                }
+            });
+
+            // Handle checkboxes (e.g., Add fee to loan)
+            dealsGrid.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!target.classList.contains('deal-checkbox')) return;
+                const card = target.closest('article[data-deal-id]');
+                if (!card) return;
+
+                const deal = state.deals.find(d => d.id === card.dataset.dealId);
+                if (!deal) return;
+
+                deal[target.dataset.field] = target.checked;
+                refreshCalculationsOnly();
+            });
+
+            // Handle card action buttons (Duplicate, Remove, Auto-repayment, Preset Years)
+            dealsGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const card = btn.closest('article[data-deal-id]');
+                if (!card) return;
+
+                const dealId = card.dataset.dealId;
+                const dealIndex = state.deals.findIndex(d => d.id === dealId);
+                if (dealIndex === -1) return;
+                const deal = state.deals[dealIndex];
+
+                // Preset period buttons (2y, 3y, 5y)
+                if (btn.dataset.presetYears) {
+                    deal.periodYears = parseFloat(btn.dataset.presetYears);
+                    renderDeals();
+                    return;
+                }
+
+                const action = btn.dataset.action;
+                if (action === 'auto-repayment') {
+                    const effectivePrincipal = deal.loan + (deal.addFeeToLoan ? deal.dealCost : 0);
+                    deal.repayment = computeStandardRepayment(effectivePrincipal, deal.rate, 15);
+                    renderDeals();
+                    showToast(`Repayment set to ${formatCurrency(deal.repayment)}/mo (15-yr term)`);
+                } else if (action === 'duplicate') {
+                    if (state.deals.length >= 4) {
+                        showToast('Maximum of 4 deals reached');
+                        return;
+                    }
+                    const nextLetter = String.fromCharCode(65 + state.deals.length);
+                    const clone = {
+                        ...deal,
+                        id: 'deal-' + Date.now(),
+                        name: `Deal ${nextLetter} (Copy)`
+                    };
+                    state.deals.splice(dealIndex + 1, 0, clone);
+                    renderDeals();
+                    showToast('Deal duplicated');
+                } else if (action === 'remove') {
+                    if (state.deals.length <= 1) return;
+                    state.deals.splice(dealIndex, 1);
+                    renderDeals();
+                    showToast('Deal removed');
+                }
+            });
+
+            // Add New Deal Button
+            document.getElementById('addDealBtn').addEventListener('click', () => {
+                if (state.deals.length >= 4) return;
+                const base = state.deals[0] || getDefaultDeals()[0];
+                const nextLetter = String.fromCharCode(65 + state.deals.length);
+                state.deals.push({
+                    id: 'deal-' + Date.now(),
+                    name: `Deal ${nextLetter} (5-Yr Fix)`,
+                    loan: base.loan,
+                    rate: 4.35,
+                    repayment: base.repayment,
+                    overpayment: base.overpayment,
+                    periodYears: 5,
+                    dealCost: 499,
+                    addFeeToLoan: false
+                });
+                renderDeals();
+                showToast(`Added Deal ${nextLetter}`);
+            });
+
+            // Sync Loan Amount across all deals
+            document.getElementById('syncLoanBtn').addEventListener('click', () => {
+                if (state.deals.length < 2) return;
+                const masterLoan = state.deals[0].loan;
+                state.deals.forEach(d => d.loan = masterLoan);
+                renderDeals();
+                showToast(`Synced ${formatCurrency(masterLoan)} loan across all deals`);
+            });
+
+            // Reset to Defaults
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                state.deals = getDefaultDeals();
+                state.selectedScheduleDealId = state.deals[0].id;
+                renderDeals();
+                showToast('Reset to £70,000 defaults');
+            });
+
+            // Currency Selector
+            document.querySelectorAll('.currency-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.currency = btn.dataset.currency;
+                    document.querySelectorAll('.currency-btn').forEach(b => {
+                        const active = b === btn;
+                        b.className = active
+                            ? 'currency-btn px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-indigo-600 shadow-xs transition'
+                            : 'currency-btn px-2.5 py-1 text-xs font-semibold rounded-md text-slate-600 hover:text-slate-900 transition';
+                    });
+                    renderDeals();
+                });
+            });
+
+            // Chart Tab Switcher
+            document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.activeChartTab = btn.dataset.chart;
+                    document.querySelectorAll('.chart-tab-btn').forEach(b => {
+                        const active = b === btn;
+                        b.className = active
+                            ? 'chart-tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg bg-white text-indigo-600 shadow-2xs transition'
+                            : 'chart-tab-btn px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition';
+                    });
+                    const results = state.deals.map(d => ({ deal: d, metrics: calculateDealMetrics(d) }));
+                    updateChart(results);
+                });
+            });
+
+            // Schedule Deal Selector
+            document.getElementById('scheduleDealSelect').addEventListener('change', (e) => {
+                state.selectedScheduleDealId = e.target.value;
+                renderScheduleTable();
+            });
+        }
+
+        // Initialize application on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            renderDeals();
+        });
+    </script>
+</body>
+</html>
